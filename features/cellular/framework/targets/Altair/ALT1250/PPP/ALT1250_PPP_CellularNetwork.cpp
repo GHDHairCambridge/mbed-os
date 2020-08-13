@@ -45,7 +45,8 @@ nsapi_error_t ALT1250_PPP_CellularNetwork::set_access_technology_impl(RadioAcces
             break;
         case RAT_NB1:
             if (memcmp(resp, "NBIOT", 5)) {
-                _at.at_cmd_discard("%RATACT", "=\"NBIOT\"");
+                // Added ,1 to persist the setting
+                _at.at_cmd_discard("%RATACT", "=\"NBIOT\",1");
             }
             break;
         case RAT_GSM:
