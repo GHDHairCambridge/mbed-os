@@ -59,6 +59,46 @@ ALT1250_PPP::ALT1250_PPP(FileHandle *fh, PinName rst, PinDirection pin_dir, PinM
     AT_CellularBase::set_cellular_properties(cellular_properties);
 }
 
+nsapi_error_t ALT1250_PPP::init()
+{
+    nsapi_error_t err = AT_CellularDevice::init();
+
+#if defined  MBED_CONF_ALT1250_PPP_SIM_SELECT
+
+    if (err == NSAPI_ERROR_OK)
+    {
+        int simmode;
+
+        _at->lock();
+        _at->flush(); // Modem seems to send extra OK responses, so flush the pipe
+
+        _at->cmd_start("AT%GETCFG=");
+        _at->write_string("SIM_INIT_SELECT_POLICY", true);
+        _at->cmd_stop();
+
+        _at->resp_start("SIM_INIT_SELECT_POLICY:");
+        simmode = _at->read_int();
+        _at->resp_stop();
+
+        tr_debug("sim mode: %d", simmode);
+
+
+        // Set mode here
+        if (simmode != MBED_CONF_ALT1250_PPP_SIM_SELECT)
+        {
+            char simSelectString[32];
+            sprintf(simSelectString, "\"SIM_INIT_SELECT_POLICY\",\"%d\"", MBED_CONF_ALT1250_PPP_SIM_SELECT);
+
+            _at->at_cmd_discard("%SETCFG", "=", "%b", simSelectString, strlen(simSelectString));
+        }
+
+        err = _at->unlock_return_error();
+    }
+#endif
+
+    return err;
+}
+
 AT_CellularContext *ALT1250_PPP::create_context_impl(ATHandler &at, const char *apn, bool cp_req, bool nonip_req)
 {
     return new ALT1250_PPP_CellularContext(at, this, apn, cp_req, nonip_req);

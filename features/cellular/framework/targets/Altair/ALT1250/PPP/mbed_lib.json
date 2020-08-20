@@ -25,6 +25,10 @@
             "help": "Serial connection baud rate",
             "value": 115200
         },
+        "sim_select": {
+            "help": "Select the SIM to use. Use 5 for iSim and 0 for external sim",
+            "value": null
+        },
         "provide-default": {
             "help": "Provide as default CellularDevice [true/false]",
             "value": false
